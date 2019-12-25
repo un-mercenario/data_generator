@@ -1,8 +1,7 @@
-name: data-generator
+name: data_generator
 
 channels:
   - conda-forge
 
 dependencies:
   - python=3.7
-  - opencv
