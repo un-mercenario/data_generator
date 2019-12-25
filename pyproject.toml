@@ -1,0 +1,13 @@
+[build-system]
+requires = ["flit_core >=2,<3"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "data_generator"
+author = "linkedai"
+author-email = "diego@linked.ai"
+classifiers = ["License :: OSI Approved :: MIT License"]
+requires = [
+    "requests >=2.6",
+    "configparser; python_version == '2.7'",
+]

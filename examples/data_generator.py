@@ -33,7 +33,7 @@ from tqdm import tqdm
 # Environment global variables
 # ==============================================================================
 # Number of output images when the data_generator.py is ejecuted
-N_SAMPLES=10
+N_SAMPLES = 10
 
 # Data - path for background images
 BACKGROUNDS_PATTERN = "data/backgrounds/*"
@@ -52,21 +52,22 @@ OUT_DIR = "data/result/{}".format(DATE)
 # number of objects for full image
 # (1) = only one image -
 # (1,3) = random objects number
-N_OBJECTS=(1, 5)
+N_OBJECTS = (1, 5)
 # ==============================================================================
 # Functions
 # ==============================================================================
 def saveData():
-  """
+    """
   Args:
   Description:
   Returns:
   """
-  # make output dir
-  os.makedirs(OUT_DIR, exist_ok=True)
+    # make output dir
+    os.makedirs(OUT_DIR, exist_ok=True)
+
 
 def setupEnvirment(objects_pattern, backgrounds_pattern, n_samples):
-  """
+    """
   Args:
     objects_pattern:      path for objects images
     backgrounds_pattern:  path for background images
@@ -75,122 +76,128 @@ def setupEnvirment(objects_pattern, backgrounds_pattern, n_samples):
   Description:
   Returns: TODO
   """
-  # 'glob' function finds all pathnames matching a specified pattern
-  # get object paths
-  objects_paths = glob(objects_pattern)
-  # get background paths
-  backgrounds_paths = glob(backgrounds_pattern)
+    # 'glob' function finds all pathnames matching a specified pattern
+    # get object paths
+    objects_paths = glob(objects_pattern)
+    # get background paths
+    backgrounds_paths = glob(backgrounds_pattern)
 
-  elements = []
+    elements = []
 
-  for _ in range(n_samples):
-    el = createElement(objects_paths, backgrounds_paths)
-    elements.append(el)
+    for _ in range(n_samples):
+        el = createElement(objects_paths, backgrounds_paths)
+        elements.append(el)
 
-  # createGoogleCSV(elements)
+    # createGoogleCSV(elements)
+
 
 def createElement(objects_paths, backgrounds_paths):
-  """
+    """
   Args:
   Description:
   Returns:
   """
-  # Check if N_OBJECTS is iterable and define amount of objects
-  if hasattr(N_OBJECTS, "__iter__"):
-    n_objs = np.random.randint(low=N_OBJECTS[0], high=N_OBJECTS[1] + 1)
-  else:
-    n_objs = N_OBJECTS
+    # Check if N_OBJECTS is iterable and define amount of objects
+    if hasattr(N_OBJECTS, "__iter__"):
+        n_objs = np.random.randint(low=N_OBJECTS[0], high=N_OBJECTS[1] + 1)
+    else:
+        n_objs = N_OBJECTS
 
-  # get random elements
-  object_idxs = np.random.choice(objects_paths, n_objs)
+    # get random elements
+    object_idxs = np.random.choice(objects_paths, n_objs)
 
-  # Create elements for the object images
-  objects = [createChild(i) for i in object_idxs]
+    # Create elements for the object images
+    objects = [createChild(i) for i in object_idxs]
 
-  # get random background
-  background_idx = np.random.randint(len(backgrounds_paths))
-  background_image = cm.utils.invChanels(cv2.imread(
-    backgrounds_paths[background_idx],
-    cv2.IMREAD_UNCHANGED,
-  ))
+    # get random background
+    background_idx = np.random.randint(len(backgrounds_paths))
+    background_image = cm.utils.invChanels(
+        cv2.imread(backgrounds_paths[background_idx], cv2.IMREAD_UNCHANGED,)
+    )
 
-  # create new element
-  el = ts.Element(background_image, objects)
+    # create new element
+    el = ts.Element(background_image, objects)
 
-  # Transform element
-  transformObjects = [
-    ts.daug.RotateElement(ts.const.Rotation.random, min=-30, max=30),
-    ts.daug.FlipElement(ts.const.Flip.y),
-    # ts.RandomResize(mode=ts.const.Resize.symmetricw, wmin=160, wmax=200, hmin=160, hmax=200)
-  ]
+    # Transformer element
+    transformObjects = [
+        ts.daug.RotateElement(ts.const.Rotation.random, min=-30, max=30),
+        ts.daug.FlipElement(ts.const.Flip.y),
+        # ts.RandomResize(mode=ts.const.Resize.symmetricw, wmin=160, wmax=200, hmin=160, hmax=200)
+    ]
 
-  name = uuid.uuid4()
-  transform = ts.Compose([
-    ts.ApplyToObjects(transformObjects),
-    # ts.daug.RotateElement(ts.const.Rotation.ninety),
-    ts.ObjectsRandomResize(mode=ts.const.Resize.symmetricw, wmin=.25, wmax=.4, hmin=.1, hmax=.4),
-    ts.ObjectsRandomPosition(xmin=0, ymin=.4, xmax=.7, ymax=.7, mode=ts.const.Position.percentage),
-    # ts.daug.FlipElement(ts.const.Flip.x),
-    ts.ObjectsGetBGColor(),
-    lr.CreateTags(),
-    ts.DrawElement(),
+    name = uuid.uuid4()
+    transform = ts.Compose(
+        [
+            ts.ApplyToObjects(transformObjects),
+            # ts.daug.RotateElement(ts.const.Rotation.ninety),
+            ts.ObjectsRandomResize(
+                mode=ts.const.Resize.symmetricw, wmin=0.25, wmax=0.4, hmin=0.1, hmax=0.4
+            ),
+            ts.ObjectsRandomPosition(
+                xmin=0, ymin=0.4, xmax=0.7, ymax=0.7, mode=ts.const.Position.percentage
+            ),
+            # ts.daug.FlipElement(ts.const.Flip.x),
+            ts.ObjectsGetBGColor(),
+            lr.CreateTags(),
+            ts.DrawElement(),
+            # lr.CreateTags(),
+            sr.SaveImage(OUT_DIR, name),
+            # sr.csv.CreateCSV(OUT_DIR, name)
+            sr.json.CreateJson(OUT_DIR, name),
+        ]
+    )
 
-    # lr.CreateTags(),
-    sr.SaveImage(OUT_DIR, name),
-    # sr.csv.CreateCSV(OUT_DIR, name)
-    sr.json.CreateJson(OUT_DIR, name)
+    el = transform(el)
 
+    return el
 
-  ])
-
-  el = transform(el)
-
-  return el
 
 def createChild(path):
-  img = cm.utils.invChanels(cv2.imread(path,cv2.IMREAD_UNCHANGED))
+    img = cm.utils.invChanels(cv2.imread(path, cv2.IMREAD_UNCHANGED))
 
-  split_name_temp = re.split(r'/|\\', path)
-  split_name = split_name_temp[2]
+    split_name_temp = re.split(r"/|\\", path)
+    split_name = split_name_temp[2]
 
-  obj = ts.Element(img,name=split_name)
+    obj = ts.Element(img, name=split_name)
 
-  return obj
+    return obj
+
 
 def createGoogleCSV(elements):
-  csv_data = ""
+    csv_data = ""
 
-  count = 0
-  train = len(elements) * .8
-  validate = len(elements) * .2
-  print(train)
+    count = 0
+    train = len(elements) * 0.8
+    validate = len(elements) * 0.2
+    print(train)
 
-  for element in elements:
-    count += 1
+    for element in elements:
+        count += 1
 
-    bh = element.image.shape[0]
-    bw = element.image.shape[1]
+        bh = element.image.shape[0]
+        bw = element.image.shape[1]
 
-    for tag in element.tags:
-      x1 = tag['pos']['x']/bw
-      y1 = tag['pos']['y']/bh
-      x2 = (tag['pos']['x'] +tag['pos']['w'])/bw
-      y2 = (tag['pos']['y']+tag['pos']['h'])/bh
+        for tag in element.tags:
+            x1 = tag["pos"]["x"] / bw
+            y1 = tag["pos"]["y"] / bh
+            x2 = (tag["pos"]["x"] + tag["pos"]["w"]) / bw
+            y2 = (tag["pos"]["y"] + tag["pos"]["h"]) / bh
 
-      if x1 > 1 :
-        x1 = 1
-      if y1 > 1 :
-        y1 = 1
-      if x2 > 1 :
-        x2 = 1
-      if y2 > 1 :
-        y2 = 1
+            if x1 > 1:
+                x1 = 1
+            if y1 > 1:
+                y1 = 1
+            if x2 > 1:
+                x2 = 1
+            if y2 > 1:
+                y2 = 1
 
-      csv_data += f"{'TRAIN' if count <= train else ('VALIDATE' if count <= train + validate else 'TEST')},PATH#{element.name},{tag['name']}.jpg,{round(x1, 2)},{round(y1, 2)},,,{round(x2, 2)},{round(y2, 2)},,\n"
-  # print(csv_data)
+            csv_data += f"{'TRAIN' if count <= train else ('VALIDATE' if count <= train + validate else 'TEST')},PATH#{element.name},{tag['name']}.jpg,{round(x1, 2)},{round(y1, 2)},,,{round(x2, 2)},{round(y2, 2)},,\n"
+    # print(csv_data)
 
-  with open("data/google_data.csv", mode="w") as f:
-      f.write(csv_data)
+    with open("data/google_data.csv", mode="w") as f:
+        f.write(csv_data)
+
 
 # ==============================================================================
 saveData()
