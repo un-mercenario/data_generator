@@ -1,15 +1,15 @@
 import cv2
 import numpy as np
 
-from data_generator.transforms.constants import Flip
-from data_generator.transforms.transform import Transformer
+from data_generator.transformers.constants import Flip
+from data_generator.transformers.transform import Transformer
 
 
 class Flip(Transformer):
     def __init__(self, mode: Flip = Flip.random):
         self.mode = mode
 
-    def __call__(self, element: Element) -> Element:
+    def map(self, element: Element) -> Element:
         assert element, "Element cannot be None"
 
         if self.mode == Flip.x:

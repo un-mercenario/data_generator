@@ -1,15 +1,13 @@
 import cv2
 import numpy as np
 
-import matplotlib.pyplot as plt
+
+def inv_chanels(image):
+    image[..., :3] = image[..., (2, 1, 0)]
+    return image
 
 
-def flat_map(f, iterable):
-    for x in iterable:
-        yield from f(x)
-
-
-def rotateBound(image, angle):
+def rotate_bound(image, angle):
     (h, w) = image.shape[:2]
     (cX, cY) = (w // 2, h // 2)
 
@@ -44,7 +42,7 @@ def rotateBound(image, angle):
     )
 
 
-def overlayTransparent(
+def overlay_transparent(
     background: np.ndarray,
     overlay: np.ndarray,
     mask: np.ndarray,

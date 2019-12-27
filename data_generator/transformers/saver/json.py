@@ -10,7 +10,7 @@ class CreateJson(Transformer):
         self.out_dir = out_dir
         self.name = name
 
-    def __call__(self, element: Element) -> Element:
+    def map(self, element: Element) -> Element:
         assert element, "element cannot be None"
 
         json_path = os.path.join(self.out_dir, f"{self.name}.json")

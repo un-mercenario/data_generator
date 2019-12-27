@@ -1,8 +1,8 @@
 import numpy as np
 
-from data_generator.transforms.constants import Rotation
-from data_generator.transforms.transform import Transformer
-from data_generator.transforms.utils import rotateBound
+from data_generator.transformers.constants import Rotation
+from data_generator.transformers.transform import Transformer
+from data_generator.transformers.utils import rotate_bound
 
 
 class Rotate(Transformer):
@@ -15,7 +15,7 @@ class Rotate(Transformer):
         else:
             self.angles = [min, max]
 
-    def __call__(self, element: Element) -> Element:
+    def map(self, element: Element) -> Element:
         assert element, "Element cannot be None"
 
         if self.mode == Rotation.upside_down or self.mode == Rotation.ninety:
@@ -23,6 +23,6 @@ class Rotate(Transformer):
         else:
             angle = np.random.uniform(low=self.angles[0], high=self.angles[1],)
 
-        element.image = rotateBound(element.image, angle)
+        element.image = rotate_bound(element.image, angle)
 
         return element

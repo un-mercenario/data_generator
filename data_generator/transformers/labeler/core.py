@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class CreateTags(Transformer):
-    def __call__(self, element: Element) -> Element:
+    def map(self, element: Element) -> Element:
         assert element, "element cannot be None"
 
         element.tags = self.create(element)

@@ -1,7 +1,7 @@
 import numpy as np
 
-from data_generator.transforms.constants import Position
-from data_generator.transforms.transform import Transformer
+from data_generator.transformers.constants import Position
+from data_generator.transformers.transform import Transformer
 
 
 # Only for element with objects
@@ -20,7 +20,7 @@ class ObjectsRandomPosition(Transformer):
         self.ymax = ymax
         self.mode = mode
 
-    def apply(self, element: Element) -> Element:
+    def map(self, element: Element) -> Element:
         assert element, "Element cannot be None"
 
         el_h: int = element.image.shape[0]

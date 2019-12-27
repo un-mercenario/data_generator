@@ -17,95 +17,10 @@ class ApplyToObjects(Transformer):
         else:
             self.transforms = [transforms]
 
-    def __call__(self, element: Element) -> Element:
+    def map(self, element: Element) -> Element:
         for object in element.objects:
             for system in self.transforms:
                 object = system(object)
-        return element
-
-
-class DrawElement(Transformer):
-    def __call__(self, element: Element) -> Element:
-        image = element.image.copy()
-
-        img = cv2.GaussianBlur(element.objects[0].image, (7, 7), 0)
-        b, g, r, a = cv2.split(img)
-
-        cimg = element.objects[0].image.copy()
-        cimg[:, :, 3] = a
-
-        for obj in element.objects:
-            image = utils.overlayTransparent(
-                background=image,
-                overlay=obj.image[..., :-1],
-                mask=obj.image[..., -1],
-                x=obj.x,
-                y=obj.y,
-            )
-
-        # plt.imshow(image)
-        # plt.show()
-        # print("Image created")
-
-        element.fimg = image
-
-        return element
-
-
-class RandomResize(Transformer):
-    def __init__(
-        self,
-        mode: Resize = Resize.asymmetric,
-        wmin=None,
-        wmax=None,
-        hmin=None,
-        hmax=None,
-    ):
-        self.wmin = wmin
-        self.wmax = wmax
-        self.hmin = hmin
-        self.hmax = hmax
-        self.mode = mode
-
-    def __call__(self, element: Element) -> Element:
-        assert element, "Element cannot be None"
-
-        wmin = self.wmin if self.wmin is not None else element.image.shape[1]
-        hmin = self.hmin if self.hmin is not None else element.image.shape[0]
-        wmax = self.wmax if self.wmax is not None else element.image.shape[1]
-        hmax = self.hmax if self.hmax is not None else element.image.shape[0]
-
-        if self.mode == Resize.symmetrich:
-            h = (
-                hmin
-                if hmin == hmax is not None
-                else np.random.randint(low=hmin, high=hmax,)
-            )
-            w = element.image.shape[1] * (h / element.image.shape[0])
-            w = int(w)
-        if self.mode == Resize.symmetricw:
-            w = (
-                wmin
-                if wmin == wmax is not None
-                else np.random.randint(low=wmin, high=wmax,)
-            )
-            h = element.image.shape[0] * (w / element.image.shape[1])
-            h = int(h)
-        else:
-            w = (
-                wmin
-                if wmin == wmax is not None
-                else np.random.randint(low=wmin, high=wmax,)
-            )
-
-            h = (
-                hmin
-                if hmin == hmax is not None
-                else np.random.randint(low=hmin, high=hmax,)
-            )
-
-        element.image = cv2.resize(element.image, (w, h))
-
         return element
 
 
@@ -124,7 +39,7 @@ class ObjectsRandomResize(Transformer):
         self.hmax = hmax
         self.mode = mode
 
-    def __call__(self, element: Element) -> Element:
+    def map(self, element: Element) -> Element:
         assert element, "Element cannot be None"
 
         el_h: int = element.image.shape[0]
@@ -165,7 +80,7 @@ class ObjectsGetBGColor(Transformer):
     def __init__(self):
         pass
 
-    def __call__(self, element: Element) -> Element:
+    def map(self, element: Element) -> Element:
         for obj in element.objects:
             t = self.color_transfer(element.image, obj.image)
             obj.image = t
