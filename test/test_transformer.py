@@ -165,7 +165,7 @@ class TestTransformer:
     def test_load(self):
 
         with open("test/test_transformer.yml", "r") as f:
-            transformer = parser.load(f)
+            transformer = parser.load(f, values=dict(inc=2))
 
         [element] = transformer(tr.Element())
 

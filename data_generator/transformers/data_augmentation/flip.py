@@ -2,9 +2,12 @@ import cv2
 import numpy as np
 
 from data_generator.transformers.constants import Flip
-from data_generator.transformers.transform import Transformer
+from data_generator.transformers.transformer import Transformer
+
+from data_generator import parser
 
 
+@parser.parseable
 class Flip(Transformer):
     def __init__(self, mode: Flip = Flip.random):
         self.mode = mode

@@ -1,6 +1,7 @@
 
 
+
 transformers:
     - Increment:
     - Increment:
-        inc: 2
+        inc: {{inc}}
